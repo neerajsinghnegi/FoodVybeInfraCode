@@ -1,0 +1,56 @@
+- hosts: all
+  tasks:
+        - yum_repository:
+                name: nginx
+                description: nginx repo
+                file: nginx
+                baseurl: http://nginx.org/packages/mainline/centos/7/$basearch/
+                gpgcheck: no
+
+        - yum:
+                name: "{{ item }}"
+                state: present
+          loop:
+                - nginx
+                - python36
+                - pip
+                - docker
+
+        - name: installing docker-py 
+          pip:
+                name: docker-py
+
+        - name: replace nginx file
+          copy:
+                src: default.conf
+                dest: /etc/nginx/conf.d/default.conf
+          notify: service nginx
+
+        - service:
+                name: "{{ item }}"
+                state: started
+          loop:
+                - nginx
+                - docker
+
+        - name: app1 container
+          docker_container:
+                name: app1
+                image: neerajsinghnegi/foodvybe:app1
+                state: started
+                ports:
+                  - "3000:3000"
+
+        - name: app2 container
+          docker_container:
+                name: app1
+                image: neerajsinghnegi/foodvybe:app2
+                state: started
+                ports:
+                  - "8080:3000"
+
+  handlers:
+         - name: service nginx
+           service:
+                name: nginx
+                state: restarted

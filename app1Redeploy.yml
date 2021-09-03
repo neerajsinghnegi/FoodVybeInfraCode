@@ -1,0 +1,10 @@
+- hosts: all
+  tasks:
+        - name: Recreate the app1 container  
+          docker_container:
+                name: app1
+                image: neerajsinghnegi/foodvybe:app1
+                recreate: yes
+                state: present
+                ports:
+                  - "3000:3000"
